@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "402372132570",
+    "project_id": "gs-techcare",
+    "storage_bucket": "gs-techcare.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:402372132570:android:8ea458a6a9489e686defe3",
+        "android_client_info": {
+          "package_name": "com.fiap.gswatchtower"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuRmsq03fI1nKkZjfeBTnChZlDcUp64GA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

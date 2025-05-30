@@ -2,13 +2,10 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-nativ
 import React, { useState } from 'react'
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { Link, router } from 'expo-router';
-import { app } from '../firebaseConfig';
 
-
-const auth = getAuth(app);
 
 function handleRegister(email: string, password: string) {
-    createUserWithEmailAndPassword(auth, email, password)
+    createUserWithEmailAndPassword(getAuth(), email, password)
   .then(() => {
     router.navigate("/")
     console.log('User account created & signed in!');
@@ -38,7 +35,7 @@ const Register = () => {
         <Text>Register</Text>
         <TextInput placeholder='email' onChangeText={setEmail}></TextInput>
         <TextInput placeholder='senha' onChangeText={setPassword}></TextInput>
-        <TouchableOpacity onPress={() => {handleRegister(email, password)}}>Registrar</TouchableOpacity>
+        <TouchableOpacity onPress={() => {handleRegister(email, password)}}><Text>Registrar</Text></TouchableOpacity>
         <Link href="/">
             <Text>TENHO CONTA</Text>
         </Link>
