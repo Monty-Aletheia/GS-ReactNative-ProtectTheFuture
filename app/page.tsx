@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import React from 'react'
-import { getAuth, signOut } from 'firebase/auth'
 import { router } from 'expo-router';
+import { getAuth, signOut } from '@react-native-firebase/auth';
 
 
 function handleSignOut() {
@@ -11,11 +11,12 @@ function handleSignOut() {
     });
 }
 
-
 const Page = () => {
+
+
   return (
     <View>
-      <Text>Test Page</Text>
+      <Text>Hello</Text>
       <TouchableOpacity onPress={handleSignOut}><Text>SignOut</Text></TouchableOpacity>
     </View>
   )

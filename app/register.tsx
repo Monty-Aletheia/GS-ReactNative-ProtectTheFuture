@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native'
 import React, { useState } from 'react'
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { Link, router } from 'expo-router';
+import { createUserWithEmailAndPassword, getAuth } from '@react-native-firebase/auth';
 
 
 function handleRegister(email: string, password: string) {
