@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import React from 'react'
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { getAuth, signOut } from '@react-native-firebase/auth';
 
 
@@ -18,6 +18,7 @@ const Page = () => {
     <View>
       <Text>Hello</Text>
       <TouchableOpacity onPress={handleSignOut}><Text>SignOut</Text></TouchableOpacity>
+      <Link href="/testPushPage"><Text>Test Push Page</Text></Link>
     </View>
   )
 }
