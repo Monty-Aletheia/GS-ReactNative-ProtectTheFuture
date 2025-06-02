@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native'
 import React from 'react'
 import '../global';
-import { Slot } from 'expo-router';
+import { Slot, Stack } from 'expo-router';
 // @ts-ignore
 import { app } from '../firebaseConfig'
 //Não sei dizer direito o pq, mas precisa disso.
@@ -11,7 +11,11 @@ console.log(app.name);
 const AppLayout = () => {
   return (
     <>
-        <Slot/>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="register" options={{ headerShown: false }} />
+        </Stack>
     </>
   )
 }

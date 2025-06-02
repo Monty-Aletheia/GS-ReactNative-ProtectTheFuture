@@ -28,7 +28,7 @@ const Login = () => {
     const unsubscribe = onAuthStateChanged(getAuth(), (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        router.navigate("/page")
+        router.navigate("/profile")
       } else {
         setUser(null);
       }
