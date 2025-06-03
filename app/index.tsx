@@ -2,11 +2,12 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-nativ
 import React, { useEffect, useState } from 'react'
 import { Link, router } from 'expo-router'
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, FirebaseAuthTypes } from '@react-native-firebase/auth'
+import { requestForegroundPermissionsAsync } from 'expo-location'
 
 function handleLogin(email: string, password: string) {
     signInWithEmailAndPassword(getAuth(), email, password)
   .then(() => {
-    router.navigate("/page")
+    router.navigate("/profile")
     console.log('User account signed in!');
   })
   .catch(error => {
@@ -24,6 +25,7 @@ const Login = () => {
 
   useEffect(() => {
 
+     requestForegroundPermissionsAsync();
 
     const unsubscribe = onAuthStateChanged(getAuth(), (currentUser) => {
       if (currentUser) {

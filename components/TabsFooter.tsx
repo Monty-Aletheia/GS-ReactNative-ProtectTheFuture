@@ -1,6 +1,8 @@
 import React from "react";
 import { Tabs } from "expo-router";
 import { Image } from "react-native";
+import { LinearGradient } from 'expo-linear-gradient'
+
 
 const TabsFooter = () => {
   return (
@@ -11,6 +13,14 @@ const TabsFooter = () => {
           height: 80,
         },
         tabBarShowLabel: false,
+        tabBarBackground: () => (
+          <LinearGradient
+            colors={['#ff4235', '#ff8348']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }} // horizontal
+            style={{ flex: 1 }}
+          />
+        ),
       }}
     >
       <Tabs.Screen
@@ -22,8 +32,8 @@ const TabsFooter = () => {
             <Image
               source={require("../assets/images/profile_icon.png")}
               style={{
-                width: 65,
-                height: 65,
+                width: 70,
+                height: 70,
                 marginTop: 40,
               }}
             />
@@ -41,9 +51,9 @@ const TabsFooter = () => {
             <Image
               source={require("../assets/images/map_icon.png")}
               style={{
-                width: 65,
-                height: 65,
-                marginTop: 40,
+                width: 45,
+                height: 60,
+                marginTop: 45,
               }}
             />
           ),
@@ -59,8 +69,8 @@ const TabsFooter = () => {
             <Image
               source={require("../assets/images/report_icon.png")}
               style={{
-                width: 75,
-                height: 65,
+                width: 52,
+                height: 45,
                 marginTop: 40,
               }}
             />
