@@ -19,10 +19,10 @@ const registerSchema = z.object({
   password: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
   address: z.object({
     street: z.string().min(1, "Rua é obrigatória"),
-    number: z.string().min(1, "Número é obrigatório"),
+    number: z.string().min(1, "Vazio"),
     neighborhood: z.string().min(1, "Bairro é obrigatório"),
     city: z.string().min(1, "Cidade é obrigatória"),
-    state: z.string().length(2, "Estado deve ter 2 letras"),
+    state: z.string().length(2, "Vazio"),
   })
 });
 
@@ -82,6 +82,7 @@ const Register = () => {
     control,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -164,12 +165,10 @@ const renderStepIndicator = ({
         console.error('CEP não encontrado');
         return;
       }
-      setEndereco({
-        logradouro: data.logradouro,
-        bairro: data.bairro,
-        localidade: data.localidade,
-        uf: data.uf
-      });
+      setValue("address.street", data.logradouro);
+      setValue("address.neighborhood", data.bairro);
+      setValue("address.city", data.localidade);
+      setValue("address.state", data.uf);
 
     }catch(error) {
       console.error('Erro ao buscar CEP:', error);
@@ -196,7 +195,7 @@ const renderStepIndicator = ({
 
     <View className="flex-1 self-center w-[80%] items-center h-full">
 
-      <View className='mt-32 '>
+      <View className='mt-20 '>
         <Image source={require("../assets/images/watchtower_logo.png")}
         className='w-64 h-52'
         />
@@ -205,13 +204,13 @@ const renderStepIndicator = ({
       { step === 2 && (
       <View className="w-full px-4 mt-10">
         
-        <View className='flex-row'>
+        <View className='flex-row mb-6'>
 
           <TextInput value={cep}
             onChangeText={setCep}
             keyboardType="numeric"
             style={styles.input} 
-            className='w-[80%] h-12 border-2 border-gray-300 px-4 mb-10' 
+            className='w-[80%] h-12 border-2 border-gray-300 px-4' 
             placeholder='CEP'
             >
           </TextInput>
@@ -221,7 +220,7 @@ const renderStepIndicator = ({
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.buttonIcon} 
-            className='w-[20%] h-12 px-4 mb-10 items-center justify-center'
+            className='w-[20%] h-12 px-4 items-center justify-center'
             >
             <TouchableOpacity
               onPress={() => buscarCep(cep)}
@@ -233,87 +232,97 @@ const renderStepIndicator = ({
           </LinearGradient>
         </View>
 
-        <View className='flex-row justify-between gap-4'>
-          <ControlledTextInput
-            control={control}
-            name="address.street"
-            placeholder="Rua"
-            error={errors.address?.street?.message}
-            style='w-[75%] h-12 border-2 border-gray-300 px-4 rounded-lg mb-10'
-            value={logradouro}
-          />
+        <View className='flex-row justify-between mb-6'>
+          <View className='w-[75%]'>
+            <ControlledTextInput
+              control={control}
+              name="address.street"
+              placeholder="Rua"
+              error={errors.address?.street}
+              style='h-12 border-2 border-gray-300 px-4 rounded-lg'
+            />
+          </View>
 
+          <View className='w-[20%]'>
+            <ControlledTextInput
+              control={control}
+              name="address.number"
+              placeholder="N°"
+              error={errors.address?.number}
+              style=' h-12 border-2 border-gray-300 px-4 rounded-lg'
+            />
+          </View>
+        </View>
+        
+        <View className='mb-6'>
           <ControlledTextInput
             control={control}
-            name="adress.number"
-            placeholder="N°"
-            secureTextEntry
-            error={errors.address?.number?.message}
-            style='w-[20%] h-12 border-2 border-gray-300 px-4 rounded-lg'
+            name="address.neighborhood"
+            placeholder="Bairro"
+            error={errors.address?.neighborhood}
+            style='w-full h-12 border-2 border-gray-300 px-4 rounded-lg' 
           />
         </View>
 
-        <ControlledTextInput
-          control={control}
-          name="address.neighborhood"
-          placeholder="Bairro"
-          error={errors.address?.neighborhood?.message}
-          style='w-full h-12 border-2 border-gray-300 px-4 rounded-lg mb-10' 
-          value={bairro}
-        />
+        <View className='flex-row justify-between mb-6'>
 
-        <View className='flex-row justify-between gap-4'>
-          <ControlledTextInput
-            control={control}
-            name="address.city"
-            placeholder="Cidade"
-            error={errors.address?.city?.message}
-            style='w-[75%] h-12 border-2 border-gray-300 px-4 rounded-lg mb-10' 
-            value={localidade}
-          />
+          <View className='w-[75%]'>
+            <ControlledTextInput
+              control={control}
+              name="address.city"
+              placeholder="Cidade"
+              error={errors.address?.city}
+              style='h-12 border-2 border-gray-300 px-4 rounded-lg ' 
+            />
+          </View>
 
-          <ControlledTextInput
-            control={control}
-            name="adress.state"
-            placeholder="UF"
-            secureTextEntry
-            error={errors.address?.number?.message}
-            style='w-[20%] h-12 border-2 border-gray-300 px-4 rounded-lg' 
-            value={uf}
-          />
+          <View className='w-[20%]'>
+            <ControlledTextInput
+              control={control}
+              name="address.state"
+              placeholder="UF"
+              error={errors.address?.state}
+              style=' h-12 border-2 border-gray-300 px-4 rounded-lg' 
+            />
+          </View>
         </View>
 
       </View>)}
 
 
       {step === 1 &&(
-        <View className="w-full px-4 mb-20 mt-20">
+        <View className="w-full px-4 mb-6 mt-10 justify-evenly">
         
-        <ControlledTextInput
-          control={control}
-          name="name"
-          placeholder="Nome"
-          error={errors.name}
-          style='w-full h-12 border-2 border-gray-300 px-4 rounded-lg mb-10' 
-        />
+        <View className='mb-10'>
+          <ControlledTextInput
+            control={control}
+            name="name"
+            placeholder="Nome"
+            error={errors.name}
+            style='w-full h-12 border-2 border-gray-300 px-4 rounded-lg' 
+          />
+        </View>
 
-  
-        <ControlledTextInput
-          control={control}
-          name="email"
-          placeholder="Email"
-          error={errors.email}
-          style='w-full h-12 border-2 border-gray-300 px-4 rounded-lg mb-10' 
-        />
+        <View className='mb-10'>
+          <ControlledTextInput
+            control={control}
+            name="email"
+            placeholder="Email"
+            error={errors.email}
+            style='w-full h-12 border-2 border-gray-300 px-4 rounded-lg' 
+          />
+        </View>
 
-        <ControlledTextInput
-          control={control}
-          name="password"
-          placeholder="Senha"
-          secureTextEntry
-          error={errors.email}
-          style='w-full h-12 border-2 border-gray-300 px-4 rounded-lg' 
-        />
+        <View className='mb-10'>
+          <ControlledTextInput
+            control={control}
+            name="password"
+            placeholder="Senha"
+            secureTextEntry
+            error={errors.password}
+            style='w-full h-12 border-2 border-gray-300 px-4 rounded-lg' 
+          />
+        </View>
       </View>
       )}
 
@@ -346,15 +355,20 @@ const renderStepIndicator = ({
           </TouchableOpacity>
         </LinearGradient>
 
-        <Link href="/" className="self-center mt-4">
-          <Text className="text-black underline font-bold text-lg">Já possui conta? Fazer login.</Text>
-        </Link>
+        <TouchableOpacity 
+              onPress={() => router.replace('/')} 
+              className="self-center mt-4"
+              >
+              <Text className="text-black underline font-bold text-lg">
+                Já possui conta? Fazer login.
+              </Text>
+          </TouchableOpacity>
 
       </View>)}
 
       {step === 2 && (
 
-        <View className='w-full px-4 mt-14'>
+        <View className='w-full px-4 mt-10'>
 
           <LinearGradient
             colors={['#ff4235', '#ff8348']}
@@ -393,9 +407,14 @@ const renderStepIndicator = ({
             </TouchableOpacity>
           </LinearGradient>
 
-          <Link href="/" className="self-center mt-4">
-            <Text className="text-black underline font-bold text-lg">Já possui conta? Fazer login.</Text>
-          </Link>
+          <TouchableOpacity 
+              onPress={() => router.replace('/')} 
+              className="self-center mt-4"
+              >
+              <Text className="text-black underline font-bold text-lg">
+                Já possui conta? Fazer login.
+              </Text>
+          </TouchableOpacity>
         </View>
 
       )}

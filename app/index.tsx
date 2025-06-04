@@ -51,7 +51,6 @@ const Login = () => {
 
   useEffect(() => {
 
-     requestForegroundPermissionsAsync();
 
     const unsubscribe = onAuthStateChanged(getAuth(), (currentUser) => {
       if (currentUser) {
@@ -88,7 +87,7 @@ const Login = () => {
 
     <View className="flex-1 self-center w-[80%] items-center h-full">
 
-      <View className='mt-32 mb-14'>
+      <View className='mt-20 mb-14'>
         <Image source={require("../assets/images/watchtower_logo.png")}
         className='w-64 h-52'
         />
@@ -140,6 +139,10 @@ const Login = () => {
 
         <Link href="/register" className="self-center mt-4">
           <Text className="text-black underline font-bold text-lg">Não possui conta? Cadastrar.</Text>
+        </Link>
+
+        <Link href="/profile" className="self-center mt-4">
+          <Text className="text-black underline font-bold text-lg">Bypass</Text>
         </Link>
 
 

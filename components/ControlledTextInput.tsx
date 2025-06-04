@@ -1,6 +1,5 @@
-import { useEffect } from "react";
-import { Controller, useController } from "react-hook-form";
-import { View, Text, TextInput } from "react-native";
+import { useController } from "react-hook-form";
+import { Text, TextInput, StyleSheet } from "react-native";
 
 type Props = {
   control: any;
@@ -41,9 +40,18 @@ const ControlledTextInput = ({
         value={value}
         
       />
-      {error && <Text className="text-red-600">{error.message}</Text>}
+      {error && <Text style={styles.error}>{error.message}</Text>}
     </>
   );
 };
 
 export default ControlledTextInput;
+
+const styles = StyleSheet.create({
+  error: {
+    fontSize: 14,
+    color: 'red',
+    marginTop: 4,
+    marginLeft: 8,
+  },
+})
