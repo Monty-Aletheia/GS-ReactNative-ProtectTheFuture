@@ -12,6 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    
     "ios": {
       "supportsTablet": true,
       "googleServicesFile": "./GoogleService-Info.plist",
@@ -56,7 +57,9 @@
       "router": {},
       "eas": {
         "projectId": "57a147e3-4c12-4578-82bb-8d8bde632db4"
+        
       }
+      
     }
   }
 }

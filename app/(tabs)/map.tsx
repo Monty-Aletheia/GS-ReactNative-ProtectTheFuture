@@ -1,7 +1,9 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useRef } from 'react'
-import { getCurrentPositionAsync, LocationAccuracy, LocationObject, watchPositionAsync } from 'expo-location'
+import { getCurrentPositionAsync, LocationAccuracy, LocationObject, requestForegroundPermissionsAsync, watchPositionAsync } from 'expo-location'
 import MapView, { Marker } from 'react-native-maps';
+import Constants from 'expo-constants';
+
 
 const Map = () => {
 
@@ -9,8 +11,15 @@ const Map = () => {
   const mapRef = useRef<MapView>(null);
 
   async function getLocation() {
-    const currentPosition = await getCurrentPositionAsync();
-    setLocation(currentPosition);
+    const { granted } = await requestForegroundPermissionsAsync();
+
+    if(granted) {
+      const currentPosition = await getCurrentPositionAsync();
+      setLocation(currentPosition);
+      console.log("Location permission granted. Current position:", currentPosition);
+      
+      console.log("Current position:", location);
+    }
   
   }
 
@@ -33,13 +42,7 @@ const Map = () => {
     <View style={styles.container}>
       { location &&
         <MapView style={styles.map} 
-        ref={mapRef}
-        initialRegion={{
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-          latitudeDelta: 0.005,
-          longitudeDelta: 0.005,
-        }}>
+        >
           <Marker coordinate={{
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
