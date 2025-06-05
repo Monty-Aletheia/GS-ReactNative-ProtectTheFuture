@@ -1,8 +1,7 @@
-import React from "react";
+import { LinearGradient } from "expo-linear-gradient";
 import { Tabs } from "expo-router";
+import React from "react";
 import { Image } from "react-native";
-import { LinearGradient } from 'expo-linear-gradient'
-
 
 const TabsFooter = () => {
   return (
@@ -15,9 +14,9 @@ const TabsFooter = () => {
         tabBarShowLabel: false,
         tabBarBackground: () => (
           <LinearGradient
-            colors={['#ff4235', '#ff8348']}
+            colors={["#ff4235", "#ff8348"]}
             start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }} // horizontal
+            end={{ x: 1, y: 0 }} 
             style={{ flex: 1 }}
           />
         ),

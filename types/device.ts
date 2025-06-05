@@ -3,5 +3,5 @@ export type Device = {
   expoDeviceToken: string;
   userId: string;
   deviceName: string;
-  user: null
-}
+  user: null;
+};

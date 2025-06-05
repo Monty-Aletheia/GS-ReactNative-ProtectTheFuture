@@ -1,11 +1,11 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
-import TabsFooter from '../../components/TabsFooter'
+import React from "react";
+import { StyleSheet } from "react-native";
+import TabsFooter from "../../components/TabsFooter";
 
 const TabsLayout = () => {
-  return <TabsFooter/>
-}
+  return <TabsFooter />;
+};
 
-export default TabsLayout
+export default TabsLayout;
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({});

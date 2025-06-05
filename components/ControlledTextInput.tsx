@@ -1,5 +1,5 @@
 import { useController } from "react-hook-form";
-import { Text, TextInput, StyleSheet } from "react-native";
+import { StyleSheet, Text, TextInput } from "react-native";
 
 type Props = {
   control: any;
@@ -18,27 +18,23 @@ const ControlledTextInput = ({
   name,
   error,
   style,
-  onChangeText
+  onChangeText,
 }: Props) => {
   const {
     field: { onChange, value },
   } = useController({ name, control });
 
-  
-
-  
   return (
     <>
-      <TextInput 
+      <TextInput
         className={style}
         secureTextEntry={secureTextEntry}
         placeholder={placeholder}
         onChangeText={(text) => {
           onChange(text);
-          onChangeText?.(text); 
+          onChangeText?.(text);
         }}
         value={value}
-        
       />
       {error && <Text style={styles.error}>{error.message}</Text>}
     </>
@@ -50,8 +46,8 @@ export default ControlledTextInput;
 const styles = StyleSheet.create({
   error: {
     fontSize: 14,
-    color: 'red',
+    color: "red",
     marginTop: 4,
     marginLeft: 8,
   },
-})
+});

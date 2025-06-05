@@ -1,7 +1,13 @@
-import React from 'react';
-import { View, TextInput, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import ControlledTextInput from './ControlledTextInput'; 
+import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
+import {
+  Image,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import ControlledTextInput from "./ControlledTextInput";
 
 type AddressFormProps = {
   control: any;
@@ -18,7 +24,7 @@ const AddressFormStep2: React.FC<AddressFormProps> = ({
   cep,
   setCep,
   buscarCep,
-  styles
+  styles,
 }) => {
   return (
     <View style={localStyles.container}>
@@ -32,7 +38,7 @@ const AddressFormStep2: React.FC<AddressFormProps> = ({
         />
 
         <LinearGradient
-          colors={['#ff4235', '#ff8348']}
+          colors={["#ff4235", "#ff8348"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={[styles.buttonIcon, localStyles.gradientIcon]}
@@ -40,9 +46,9 @@ const AddressFormStep2: React.FC<AddressFormProps> = ({
           <TouchableOpacity
             onPress={() => buscarCep(cep)}
             activeOpacity={0.8}
-            style={{ backgroundColor: 'transparent' }}
+            style={{ backgroundColor: "transparent" }}
           >
-            <Image source={require('../assets/images/search_icon.png')} />
+            <Image source={require("../assets/images/search_icon.png")} />
           </TouchableOpacity>
         </LinearGradient>
       </View>
@@ -106,48 +112,48 @@ const AddressFormStep2: React.FC<AddressFormProps> = ({
 
 const localStyles = StyleSheet.create({
   container: {
-    width: '100%',
+    width: "100%",
     paddingHorizontal: 16,
     marginTop: 20,
   },
   cepRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 24,
   },
   cepInput: {
-    width: '80%',
+    width: "80%",
     height: 48,
     borderWidth: 2,
-    borderColor: '#D1D5DB',
+    borderColor: "#D1D5DB",
     paddingHorizontal: 16,
     borderTopLeftRadius: 6,
   },
   gradientIcon: {
-    width: '20%',
+    width: "20%",
     height: 48,
     paddingHorizontal: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 24,
   },
   streetInput: {
-    width: '75%',
+    width: "75%",
   },
   numberInput: {
-    width: '20%',
+    width: "20%",
   },
   inputWrapper: {
     marginBottom: 24,
   },
   cityInput: {
-    width: '75%',
+    width: "75%",
   },
   stateInput: {
-    width: '20%',
+    width: "20%",
   },
 });
 

@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import ControlledTextInput from './ControlledTextInput';
+import React from "react";
+import { StyleSheet, View } from "react-native";
+import ControlledTextInput from "./ControlledTextInput";
 
 type Props = {
   control: any;
@@ -46,20 +46,20 @@ const AddressFormStep1: React.FC<Props> = ({ control, errors }) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
+    width: "100%",
     paddingHorizontal: 16,
     marginBottom: 24,
     marginTop: 40,
-    justifyContent: 'space-evenly',
+    justifyContent: "space-evenly",
   },
   inputWrapper: {
     marginBottom: 40,
   },
   input: {
-    width: '100%',
+    width: "100%",
     height: 48,
     borderWidth: 2,
-    borderColor: '#D1D5DB', // gray-300
+    borderColor: "#D1D5DB", // gray-300
     paddingHorizontal: 16,
     borderRadius: 8,
   },
