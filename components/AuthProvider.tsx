@@ -16,7 +16,7 @@ type AuthContextType = {
     address: Address,
   ) => Promise<boolean>;
   signOutProvider: () => void;
-  updateUser: (newName: string) => Promise<void>;
+  updateUser: (newName: string) => Promise<boolean>;
   getUserByFirebaseId: (pushToken: string) => Promise<UserResponse | null>;
   user: User | null;
   isLoading: boolean;
@@ -157,18 +157,21 @@ const signUp = async (
 
 const updateUser = async (newName: string) => {
     try {
-      const response = await api.put(`/User/${user?.id}`, {
+      const response = await api.put(`/User/${userResponse?.user.id}`, {
         name: newName,
-        email: user?.email,
-        password: user?.password,
       });
 
-      if (response.status === 200) {
+      if (response.status === 204) {
         getUserByFirebaseId(userFirebaseId);
         setUser(response.data);
+        return true
+      } else {
+        console.error("Erro ao atualizar usuário:", response.status);
+        return false;
       }
     } catch (error) {
       console.error("Erro ao atualizar dentista: ", error);
+      return false;
     }
   };
   

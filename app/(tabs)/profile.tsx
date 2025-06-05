@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View, Platform, TextInput, Image } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { getAuth, signOut } from '@react-native-firebase/auth';
 import { router } from 'expo-router';
@@ -7,6 +7,8 @@ import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import axios from 'axios';
 import { useAuth } from '../../components/AuthProvider';
+import { LinearGradient } from 'expo-linear-gradient';
+import api from '../../service/api';
 
 
 Notifications.setNotificationHandler({
@@ -75,7 +77,7 @@ async function addDeviceToUser(
   try {
     console.log(`expoDeviceToken: ${expoDeviceToken} userId: ${userId} deviceName: ${deviceName}`)
 
-    const response = await axios.post("/Device", {
+    const response = await api.post("/Device", {
       expoDeviceToken: expoDeviceToken,
       userId: userId,
       deviceName: deviceName
@@ -89,15 +91,25 @@ async function addDeviceToUser(
       console.error("Failed to add device", response.status, response.data);
     }
   } catch (error: any) {
-console.error("❌ Erro completo (detalhado):", JSON.stringify(error, null, 2));    
-  }
+    console.error("Error adding device:", error.message || error);}
 }
 
 const Profile = () => {
 
+    const [newName, setNewName] = useState("");
     const [expoPushToken, setExpoPushToken] = useState('');
-    const { userResponse, getUserByFirebaseId, signOutProvider} = useAuth();
+    const { userResponse, getUserByFirebaseId, signOutProvider, updateUser} = useAuth();
 
+    async function handleUpdate(newName: string) {
+        const success = await updateUser(
+          newName
+        );        
+        if (success) {
+          router.reload();      
+        } else {
+          console.log("Falha na atualização do nome");
+        }
+      }
 
     useEffect(() => {
       
@@ -139,9 +151,39 @@ const Profile = () => {
 
 
   return (
-    <View>
-      <Text>Profile</Text>
-      <TouchableOpacity className='mt-10' onPress={handleSignOut}><Text>SignOut</Text></TouchableOpacity>
+    <View className='flex-1 items-center justify-evenly p-6 h-full'>
+      <View className='flex-row items-center justify-between w-full'>
+        <TouchableOpacity className='mt-10' onPress={handleSignOut}>
+          <Image source={require("../../assets/images/signout_icon.png")}/>
+        </TouchableOpacity>
+      </View>
+
+      <View className='flex-1 items-center justify-evenly w-full mt-24'>
+        <View className='flex-row items-center justify-center mb-24'>
+          <Text className='font-black text-3xl self-center'>Olá, {userResponse?.user.name}</Text>
+        </View>
+        <View className='flex-1 items-center justify-center gap-16 w-full'>
+          <Text className='font-black text-3xl self-center'>Trocar Nome</Text>
+          <TextInput onChangeText={setNewName} className='w-[85%] h-12 border-2 border-gray-300 px-4 rounded-lg' placeholder='Novo Nome'></TextInput>
+          <LinearGradient
+            colors={['#ff4235', '#ff8348']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            className="self-center rounded-xl shadow-lg overflow-hidden"
+          >
+            <TouchableOpacity
+              onPress={() => {handleUpdate(newName)}}
+              activeOpacity={0.8}
+              className="p-4 rounded-xl py-3"
+              style={{ backgroundColor: 'transparent' }}
+            >
+              <Text className="text-white text-center font-semibold text-xl">
+                Atualizar
+              </Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        </View>
+      </View>
     </View>
   )
 }
