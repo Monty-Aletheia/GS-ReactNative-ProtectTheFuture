@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image } from 'react-native'
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Link, router } from 'expo-router';
 import { createUserWithEmailAndPassword, getAuth } from '@react-native-firebase/auth';
@@ -15,6 +15,7 @@ import AddressForm from '../components/addressFormStep2';
 import AddressFormStep1 from '../components/addressFormSetp1';
 import FormFooterStep1 from '../components/formFooterStep1';
 import FormFooterStep2 from '../components/formFooterStep2';
+import LoadingIndicator from '../components/loadingIndicator';
 
 
 
@@ -200,6 +201,15 @@ const renderStepIndicator = ({
         renderStepIndicator={renderStepIndicator}
         />
       </View>
+
+      { isLoading && (
+        <View className='flex-1 items-center justify-center'>
+          <ActivityIndicator
+            size="large"
+            color="#FF3131"
+          />
+        </View>
+      )}
 
       {step === 1 && ( 
         <FormFooterStep1 onNext={() => setStep(2)} />)}

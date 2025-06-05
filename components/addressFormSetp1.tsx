@@ -1,7 +1,6 @@
-// components/AddressForm2.tsx
 import React from 'react';
-import { View } from 'react-native';
-import ControlledTextInput from './ControlledTextInput'; // ajuste o caminho se necessário
+import { View, StyleSheet } from 'react-native';
+import ControlledTextInput from './ControlledTextInput';
 
 type Props = {
   control: any;
@@ -10,8 +9,8 @@ type Props = {
 
 const AddressFormStep1: React.FC<Props> = ({ control, errors }) => {
   return (
-    <View className="w-full px-4 mb-6 mt-10 justify-evenly">
-      <View className="mb-10">
+    <View style={styles.container}>
+      <View style={styles.inputWrapper}>
         <ControlledTextInput
           control={control}
           name="name"
@@ -21,7 +20,7 @@ const AddressFormStep1: React.FC<Props> = ({ control, errors }) => {
         />
       </View>
 
-      <View className="mb-10">
+      <View style={styles.inputWrapper}>
         <ControlledTextInput
           control={control}
           name="email"
@@ -31,7 +30,7 @@ const AddressFormStep1: React.FC<Props> = ({ control, errors }) => {
         />
       </View>
 
-      <View className="mb-10">
+      <View style={styles.inputWrapper}>
         <ControlledTextInput
           control={control}
           name="password"
@@ -44,5 +43,26 @@ const AddressFormStep1: React.FC<Props> = ({ control, errors }) => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    width: '100%',
+    paddingHorizontal: 16,
+    marginBottom: 24,
+    marginTop: 40,
+    justifyContent: 'space-evenly',
+  },
+  inputWrapper: {
+    marginBottom: 40,
+  },
+  input: {
+    width: '100%',
+    height: 48,
+    borderWidth: 2,
+    borderColor: '#D1D5DB', // gray-300
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+});
 
 export default AddressFormStep1;

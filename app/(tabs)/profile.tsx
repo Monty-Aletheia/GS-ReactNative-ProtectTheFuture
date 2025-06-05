@@ -66,29 +66,32 @@ async function registerForPushNotificationsAsync() {
 }
 
 async function addDeviceToUser(
-  expoPushToken: string,
+  expoDeviceToken: string,
   userId: string | undefined,
   deviceName: string | null,
 ) {
 
 
   try {
+    console.log(`expoDeviceToken: ${expoDeviceToken} userId: ${userId} deviceName: ${deviceName}`)
+
     const response = await axios.post("/Device", {
-      expoPushToken,
-      userId,
-      deviceName
+      expoDeviceToken: expoDeviceToken,
+      userId: userId,
+      deviceName: deviceName
     });
+
+    console.log(response);
 
     if (response.status == 201) {
       console.log("Device added successfully");
     } else {
       console.error("Failed to add device", response.status, response.data);
     }
-  } catch (error) {
-    console.error("Error adding device:", error);
+  } catch (error: any) {
+console.error("❌ Erro completo (detalhado):", JSON.stringify(error, null, 2));    
   }
 }
-
 
 const Profile = () => {
 
@@ -98,8 +101,6 @@ const Profile = () => {
 
     useEffect(() => {
       
-      getUserByFirebaseId(expoPushToken)
-
       registerForPushNotificationsAsync()
         .then(token => {
           if (token !== undefined) {

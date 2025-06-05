@@ -113,7 +113,6 @@ const signUp = async (
             
             if (response.status == 201) {
               const status = response.status
-
               console.log("Usuario cadastrado no backend", status);
               return true;
             } else {
@@ -125,6 +124,8 @@ const signUp = async (
           } catch (error) {
             console.error("Erro no backend:", error);
             return false;
+          } finally {
+            setIsLoading(false);
           }
 
   };

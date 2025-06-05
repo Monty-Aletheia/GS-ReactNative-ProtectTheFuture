@@ -1,6 +1,5 @@
-// components/FooterStep.tsx
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 
@@ -10,35 +9,67 @@ type Props = {
 
 const formFooterStep1: React.FC<Props> = ({ onNext }) => {
   return (
-    <View className="w-full px-4 mt-16">
+    <View style={localStyles.container}>
       <LinearGradient
         colors={['#ff4235', '#ff8348']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
-        className="w-[50%] self-center rounded-xl shadow-lg overflow-hidden"
+        style={localStyles.gradient}
       >
         <TouchableOpacity
           onPress={onNext}
           activeOpacity={0.8}
-          className="p-4 rounded-xl py-3"
-          style={{ backgroundColor: 'transparent' }}
+          style={[localStyles.button, { backgroundColor: 'transparent' }]}
         >
-          <Text className="text-white text-center font-semibold text-xl">
-            Avançar
-          </Text>
+          <Text style={localStyles.buttonText}>Avançar</Text>
         </TouchableOpacity>
       </LinearGradient>
 
-      <TouchableOpacity
-        onPress={() => router.replace('/')}
-        className="self-center mt-4"
-      >
-        <Text className="text-black underline font-bold text-lg">
-          Já possui conta? Fazer login.
-        </Text>
+      <TouchableOpacity onPress={() => router.replace('/')} style={localStyles.loginLink}>
+        <Text style={localStyles.loginText}>Já possui conta? Fazer login.</Text>
       </TouchableOpacity>
     </View>
   );
 };
+
+const localStyles = StyleSheet.create({
+  container: {
+    width: '100%',
+    paddingHorizontal: 16,
+    marginTop: 50,
+  },
+  gradient: {
+    width: '50%',
+    alignSelf: 'center',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 6,
+    elevation: 5,
+    overflow: 'hidden',
+  },
+  button: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  buttonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: '600',
+    fontSize: 20,
+  },
+  loginLink: {
+    alignSelf: 'center',
+    marginTop: 16,
+  },
+  loginText: {
+    color: '#000',
+    textDecorationLine: 'underline',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+});
 
 export default formFooterStep1;
