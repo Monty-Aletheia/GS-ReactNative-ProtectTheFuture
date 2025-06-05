@@ -16,7 +16,12 @@ const Map = () => {
   const [selectedReport, setSelectedReport] = useState("")
   const mapRef = useRef<MapView>(null);
   const bottomSheetRef = useRef(null);
-  const snapPoints = ['45%', '85%'];
+  const snapPoints = ['50%', '85%'];
+  const reports = [
+  { id: 1, type: "flood", latitude: -23.56, longitude: -46.63 },
+  { id: 2, type: "fire", latitude: -23.55, longitude: -46.62 },
+  { id: 3, type: "crime", latitude: -23.54, longitude: -46.61 },
+];
 
 
   const handleOpenBottomSheet = () => {
@@ -26,7 +31,6 @@ const Map = () => {
 
     const handleReport = () => {
   if (!selectedReport) return;
-
   switch (selectedReport) {
     case "fire":
       reportService.reportFire();
@@ -41,20 +45,15 @@ const Map = () => {
       reportService.reportCrime();
       break;
   }
-
 };
 
   async function getLocation() {
     const { granted } = await requestForegroundPermissionsAsync();
-
     if(granted) {
       const currentPosition = await getCurrentPositionAsync();
       setLocation(currentPosition);
       console.log("Location permission granted. Current position:", currentPosition);
-      
-      
     }
-  
   }
 
   useEffect(() => {
@@ -72,12 +71,6 @@ const Map = () => {
     })
     console.log("Current position:", location);
   }, []);
-  
-  const handlePress = () => {
-    console.log('Botão pressionado!');
-  };
-
-  
 
   return (
     <View style={styles.container}>
@@ -89,12 +82,18 @@ const Map = () => {
             longitude: location.coords.longitude,
           }} title="Você está aqui" icon={require("../../assets/images/user_marker.png")} />
 
-          <Marker coordinate={{
-            latitude: -23.550520,
-            longitude: -46.633308,
-          }} title="São Paulo" icon={require("../../assets/images/user_marker.png")} />
-
-          </MapView>
+          {reports.map((report) => (
+          <Marker
+            key={report.id}
+            coordinate={{
+              latitude: report.latitude,
+              longitude: report.longitude,
+            }}
+            title={`Perigo: ${report.type}`}
+            icon={require("../../assets/images/danger_marker.png")} 
+          />
+          ))}
+        </MapView>
         
         }
 
@@ -112,7 +111,7 @@ const Map = () => {
       { appearBottomSheet && (
         <BottomSheet
         ref={bottomSheetRef}
-        index={1}
+        index={0}
         snapPoints={snapPoints}
         enablePanDownToClose={true} 
         onClose={() => setAppearBottomSheet(false)}
@@ -143,8 +142,7 @@ const Map = () => {
               className="self-center rounded-xl shadow-lg overflow-hidden mt-16 w-[50%]"
             >
               <TouchableOpacity
-                onPress={() => {console.log(selectedReport);
-                }}
+                onPress={handleReport}
                 activeOpacity={0.8}
                 className="p-4 rounded-xl py-"
                 style={{ backgroundColor: 'transparent' }}
