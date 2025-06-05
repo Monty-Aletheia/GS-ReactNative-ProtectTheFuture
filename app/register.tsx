@@ -15,7 +15,6 @@ import AddressForm from '../components/addressFormStep2';
 import AddressFormStep1 from '../components/addressFormSetp1';
 import FormFooterStep1 from '../components/formFooterStep1';
 import FormFooterStep2 from '../components/formFooterStep2';
-import LoadingIndicator from '../components/loadingIndicator';
 
 
 

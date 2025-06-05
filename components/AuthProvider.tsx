@@ -149,9 +149,20 @@ const signUp = async (
     
   };
 
-  const signOutProvider = () => {
-    setUserFirebaseId(""); 
-    setUserResponse(null);
+  const signOutProvider = async () => {
+    
+    try {
+      const deviceId = await AsyncStorage.getItem("@deviceId")
+      const respose = await api.delete(`/Device/${deviceId}`)
+      if (respose.status === 204) {
+        console.log("Device deleted successfully");
+        setUserFirebaseId(""); 
+        setUserResponse(null);
+      }
+    } catch (error) {
+      console.error("Erro ao deletar device:", error);
+    }
+    
 };
 
 

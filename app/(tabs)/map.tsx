@@ -1,8 +1,9 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native'
 import React, { useEffect, useRef } from 'react'
 import { getCurrentPositionAsync, LocationAccuracy, LocationObject, requestForegroundPermissionsAsync, watchPositionAsync } from 'expo-location'
 import MapView, { Marker } from 'react-native-maps';
 import Constants from 'expo-constants';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 const Map = () => {
@@ -38,6 +39,10 @@ const Map = () => {
     })
     console.log("Current position:", location);
   }, []);
+  
+  const handlePress = () => {
+    console.log('Botão pressionado!');
+  };
 
   return (
     <View style={styles.container}>
@@ -49,9 +54,25 @@ const Map = () => {
             longitude: location.coords.longitude,
           }} title="Você está aqui" icon={require("../../assets/images/user_marker.png")} />
 
+          <Marker coordinate={{
+            latitude: -23.550520,
+            longitude: -46.633308,
+          }} title="São Paulo" icon={require("../../assets/images/user_marker.png")} />
+
           </MapView>
         
         }
+
+        <TouchableOpacity style={styles.fab} onPress={handlePress}>
+        <LinearGradient
+          colors={['#FF3131', '#FF914D']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.gradient}
+        >
+          <Image source={require("../../assets/images/danger_report_icon.png")}/>
+        </LinearGradient>
+      </TouchableOpacity>
     </View>
   )
 }
@@ -65,5 +86,29 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-  }
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+    overflow: 'hidden',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+  },
+  gradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fabText: {
+    fontSize: 30,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
 })

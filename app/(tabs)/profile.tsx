@@ -9,6 +9,7 @@ import axios from 'axios';
 import { useAuth } from '../../components/AuthProvider';
 import { LinearGradient } from 'expo-linear-gradient';
 import api from '../../service/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 Notifications.setNotificationHandler({
@@ -87,6 +88,9 @@ async function addDeviceToUser(
 
     if (response.status == 201) {
       console.log("Device added successfully");
+      const data = response.data;
+      console.log("Device data:", data);
+      await AsyncStorage.setItem("@deviceId", data);
     } else {
       console.error("Failed to add device", response.status, response.data);
     }

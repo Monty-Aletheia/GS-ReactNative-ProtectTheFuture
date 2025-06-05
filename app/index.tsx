@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image } from 'react-native'
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Link, router } from 'expo-router'
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, FirebaseAuthTypes } from '@react-native-firebase/auth'
@@ -115,6 +115,14 @@ const Login = () => {
         />
       </View>
 
+      {isLoading && (
+        <View className='flex-1 items-center justify-center'>
+          <ActivityIndicator
+            size="large"
+            color="#FF3131"
+          />
+        </View>
+      )}
       <View className='w-full px-4 mt-36'>
         <LinearGradient
           colors={['#ff4235', '#ff8348']}
