@@ -76,6 +76,12 @@ const Map = () => {
     <View style={styles.container}>
       { location &&
         <MapView style={styles.map} 
+        initialRegion={{
+          latitude: location.coords.latitude,         
+          longitude: location.coords.longitude,
+          latitudeDelta: 0.05,         
+          longitudeDelta: 0.05,        
+        }}
         >
           <Marker coordinate={{
             latitude: location.coords.latitude,
