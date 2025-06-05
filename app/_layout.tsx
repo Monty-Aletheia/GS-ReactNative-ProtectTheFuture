@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import React from 'react'
 import '../global';
 import { Slot, Stack } from 'expo-router';
@@ -13,11 +14,13 @@ const AppLayout = () => {
   return (
     <>
       <AuthProvider>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="register" options={{ headerShown: false }} />
-        </Stack>
+        <GestureHandlerRootView>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="register" options={{ headerShown: false }} />
+          </Stack>
+        </GestureHandlerRootView>
       </AuthProvider>
     </>
   )
