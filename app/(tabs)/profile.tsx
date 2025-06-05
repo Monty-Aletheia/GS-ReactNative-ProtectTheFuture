@@ -1,21 +1,146 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import { StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import { getAuth, signOut } from '@react-native-firebase/auth';
 import { router } from 'expo-router';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+import * as Device from 'expo-device';
+import axios from 'axios';
+import { useAuth } from '../../components/AuthProvider';
+
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
+function handleRegistrationError(errorMessage: string) {
+  alert(errorMessage);
+  throw new Error(errorMessage);
+}
+
+async function registerForPushNotificationsAsync() {
+  if (Platform.OS === 'android') {
+    Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
+
+  if (Device.isDevice) {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      handleRegistrationError('Permission not granted to get push token for push notification!');
+      return;
+    }
+    const projectId =
+      Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+    if (!projectId) {
+      handleRegistrationError('Project ID not found');
+    }
+    try {
+      const pushTokenString = (
+        await Notifications.getExpoPushTokenAsync({
+          projectId,
+        })
+      ).data;
+      console.log(pushTokenString);
+      return pushTokenString;
+    } catch (e: unknown) {
+      handleRegistrationError(`${e}`);
+    }
+  } else {
+    handleRegistrationError('Must use physical device for push notifications');
+  }
+}
+
+async function addDeviceToUser(
+  expoPushToken: string,
+  userId: string | undefined,
+  deviceName: string | null,
+) {
+
+
+  try {
+    const response = await axios.post("/Device", {
+      expoPushToken,
+      userId,
+      deviceName
+    });
+
+    if (response.status == 201) {
+      console.log("Device added successfully");
+    } else {
+      console.error("Failed to add device", response.status, response.data);
+    }
+  } catch (error) {
+    console.error("Error adding device:", error);
+  }
+}
+
 
 const Profile = () => {
 
+    const [expoPushToken, setExpoPushToken] = useState('');
+    const { userResponse, getUserByFirebaseId, signOutProvider} = useAuth();
+
+
+    useEffect(() => {
+      
+      getUserByFirebaseId(expoPushToken)
+
+      registerForPushNotificationsAsync()
+        .then(token => {
+          if (token !== undefined) {
+          const formattedToken = token.replace('ExponentPushToken[', '').replace(']', '');
+          getUserByFirebaseId(formattedToken).then((user) => {
+            console.log("Adding device to user:", formattedToken, user?.user.id, Device.deviceName);
+            addDeviceToUser(formattedToken, user?.user.id, Device.deviceName);
+
+          }).catch((error: any) => {
+            console.error("Error getting user by Firebase ID:", error);
+          })
+        }
+          setExpoPushToken(token ?? '')} )
+        .catch((error: any) => setExpoPushToken(`${error}`));
+
+          
+    
+  }, []);
+
+  
+  useEffect(() => {
+
+    
+
+  } , [expoPushToken]);
+
   function handleSignOut() {
+    
       signOut(getAuth()).then(() => {
-          router.replace("/")
-          console.log('User signed out!')
+        signOutProvider();
+          
+          router.replace("/");
       });
   }
+
+
 
   return (
     <View>
       <Text>Profile</Text>
-      <TouchableOpacity onPress={handleSignOut}><Text>SignOut</Text></TouchableOpacity>
+      <TouchableOpacity className='mt-10' onPress={handleSignOut}><Text>SignOut</Text></TouchableOpacity>
     </View>
   )
 }

@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link, router } from 'expo-router';
 import { createUserWithEmailAndPassword, getAuth } from '@react-native-firebase/auth';
 import z from 'zod';
@@ -10,6 +10,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../components/AuthProvider';
 import StepIndicator from 'react-native-step-indicator';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import AddressForm from '../components/addressFormStep2';
+import AddressFormStep1 from '../components/addressFormSetp1';
+import FormFooterStep1 from '../components/formFooterStep1';
+import FormFooterStep2 from '../components/formFooterStep2';
 
 
 
@@ -28,27 +33,6 @@ const registerSchema = z.object({
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-
-
-
-// function handleRegister(email: string, password: string) {
-//     createUserWithEmailAndPassword(getAuth(), email, password)
-//   .then(() => {
-//     router.navigate("/")
-//     console.log('User account created & signed in!');
-//   })
-//   .catch(error => {
-//     if (error.code === 'auth/email-already-in-use') {
-//       console.log('That email address is already in use!');
-//     }
-
-//     if (error.code === 'auth/invalid-email') {
-//       console.log('That email address is invalid!');
-//     }
-
-//     console.error(error);
-//   });
-// }
 
 const customLabels = ['Dados', 'Endereço'];
 
@@ -77,7 +61,7 @@ const Register = () => {
     const [step, setStep] = useState(1);
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
-    const { signUp, isLoading } = useAuth(); // Assuming you have a signUp function in your AuthProvide
+    const { signUp, isLoading } = useAuth(); 
     const {
     control,
     handleSubmit,
@@ -99,6 +83,14 @@ const Register = () => {
     },
   });
 
+async function getFirebaseId() {
+    const userFirebaseId = await AsyncStorage.getItem("@userFirebaseId");
+    console.log("User Firebase ID:", userFirebaseId);
+    
+  }
+  useEffect(() => {
+    getFirebaseId();
+  }, []);
 
   async function handleRegister(data: RegisterFormData) {
     const success = await signUp(
@@ -108,7 +100,7 @@ const Register = () => {
       data.address
     );
     if (success) {
-      router.replace("/");
+      router.replace("/");      
     } else {
       console.log("Falha no cadastro");
     }
@@ -157,7 +149,6 @@ const renderStepIndicator = ({
     }
 
     try{
-      console.log('Dentro do trey:', cepLimpo);
       
       const reponse = await axios.get(`https://viacep.com.br/ws/${cepLimpo}/json/`);
       const data = reponse.data;
@@ -172,26 +163,10 @@ const renderStepIndicator = ({
 
     }catch(error) {
       console.error('Erro ao buscar CEP:', error);
-    } finally {
-      console.log('Busca de CEP concluída: ', endereco);
-    }
+    } 
   }
-
-  const logradouro = endereco.logradouro;
-  const bairro = endereco.bairro;
-  const localidade = endereco.localidade;
-  const uf = endereco.uf;
         
   return (
-    // <View>
-    //     <Text>Register</Text>
-    //     <TextInput placeholder='email' onChangeText={setEmail}></TextInput>
-    //     <TextInput placeholder='senha' onChangeText={setPassword}></TextInput>
-    //     <TouchableOpacity onPress={() => {handleRegister(email, password)}}><Text>Registrar</Text></TouchableOpacity>
-    //     <Link href="/">
-    //         <Text>TENHO CONTA</Text>
-    //     </Link>
-    // </View>
 
     <View className="flex-1 self-center w-[80%] items-center h-full">
 
@@ -202,128 +177,19 @@ const renderStepIndicator = ({
       </View>
 
       { step === 2 && (
-      <View className="w-full px-4 mt-10">
-        
-        <View className='flex-row mb-6'>
-
-          <TextInput value={cep}
-            onChangeText={setCep}
-            keyboardType="numeric"
-            style={styles.input} 
-            className='w-[80%] h-12 border-2 border-gray-300 px-4' 
-            placeholder='CEP'
-            >
-          </TextInput>
-
-          <LinearGradient
-            colors={['#ff4235', '#ff8348']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.buttonIcon} 
-            className='w-[20%] h-12 px-4 items-center justify-center'
-            >
-            <TouchableOpacity
-              onPress={() => buscarCep(cep)}
-              activeOpacity={0.8}
-              style={{ backgroundColor: 'transparent' }}
-            >
-              <Image source={require("../assets/images/search_icon.png")}/>
-            </TouchableOpacity>
-          </LinearGradient>
-        </View>
-
-        <View className='flex-row justify-between mb-6'>
-          <View className='w-[75%]'>
-            <ControlledTextInput
-              control={control}
-              name="address.street"
-              placeholder="Rua"
-              error={errors.address?.street}
-              style='h-12 border-2 border-gray-300 px-4 rounded-lg'
-            />
-          </View>
-
-          <View className='w-[20%]'>
-            <ControlledTextInput
-              control={control}
-              name="address.number"
-              placeholder="N°"
-              error={errors.address?.number}
-              style=' h-12 border-2 border-gray-300 px-4 rounded-lg'
-            />
-          </View>
-        </View>
-        
-        <View className='mb-6'>
-          <ControlledTextInput
-            control={control}
-            name="address.neighborhood"
-            placeholder="Bairro"
-            error={errors.address?.neighborhood}
-            style='w-full h-12 border-2 border-gray-300 px-4 rounded-lg' 
-          />
-        </View>
-
-        <View className='flex-row justify-between mb-6'>
-
-          <View className='w-[75%]'>
-            <ControlledTextInput
-              control={control}
-              name="address.city"
-              placeholder="Cidade"
-              error={errors.address?.city}
-              style='h-12 border-2 border-gray-300 px-4 rounded-lg ' 
-            />
-          </View>
-
-          <View className='w-[20%]'>
-            <ControlledTextInput
-              control={control}
-              name="address.state"
-              placeholder="UF"
-              error={errors.address?.state}
-              style=' h-12 border-2 border-gray-300 px-4 rounded-lg' 
-            />
-          </View>
-        </View>
-
-      </View>)}
+      <AddressForm
+        control={control}
+        errors={errors}
+        cep={cep}
+        setCep={setCep}
+        buscarCep={buscarCep}
+        styles={styles}
+        />
+    )}
 
 
       {step === 1 &&(
-        <View className="w-full px-4 mb-6 mt-10 justify-evenly">
-        
-        <View className='mb-10'>
-          <ControlledTextInput
-            control={control}
-            name="name"
-            placeholder="Nome"
-            error={errors.name}
-            style='w-full h-12 border-2 border-gray-300 px-4 rounded-lg' 
-          />
-        </View>
-
-        <View className='mb-10'>
-          <ControlledTextInput
-            control={control}
-            name="email"
-            placeholder="Email"
-            error={errors.email}
-            style='w-full h-12 border-2 border-gray-300 px-4 rounded-lg' 
-          />
-        </View>
-
-        <View className='mb-10'>
-          <ControlledTextInput
-            control={control}
-            name="password"
-            placeholder="Senha"
-            secureTextEntry
-            error={errors.password}
-            style='w-full h-12 border-2 border-gray-300 px-4 rounded-lg' 
-          />
-        </View>
-      </View>
+        <AddressFormStep1 control={control} errors={errors} />
       )}
 
       <View className='w-28 px-4'>
@@ -335,88 +201,10 @@ const renderStepIndicator = ({
         />
       </View>
 
-      {step === 1 && (
-      <View className='w-full px-4 mt-16'>
-        <LinearGradient
-          colors={['#ff4235', '#ff8348']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          className="w-[50%] self-center rounded-xl  shadow-lg overflow-hidden"
-        >
-          <TouchableOpacity
-            onPress={() => setStep(2)}
-            activeOpacity={0.8}
-            className="p-4 rounded-xl py-3"
-            style={{ backgroundColor: 'transparent' }}
-          >
-            <Text className="text-white text-center font-semibold text-xl">
-              Avançar
-            </Text>
-          </TouchableOpacity>
-        </LinearGradient>
-
-        <TouchableOpacity 
-              onPress={() => router.replace('/')} 
-              className="self-center mt-4"
-              >
-              <Text className="text-black underline font-bold text-lg">
-                Já possui conta? Fazer login.
-              </Text>
-          </TouchableOpacity>
-
-      </View>)}
-
+      {step === 1 && ( 
+        <FormFooterStep1 onNext={() => setStep(2)} />)}
       {step === 2 && (
-
-        <View className='w-full px-4 mt-10'>
-
-          <LinearGradient
-            colors={['#ff4235', '#ff8348']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            className="w-[60%] self-center rounded-xl  shadow-lg overflow-hidden mb-4"
-          >
-            <TouchableOpacity
-              onPress={handleSubmit(handleRegister)}
-              activeOpacity={0.8}
-              className="p-4 rounded-xl py-3"
-              style={{ backgroundColor: 'transparent' }}
-            >
-              <Text className="text-white text-center font-semibold text-xl">
-                Cadastrar
-              </Text>
-            </TouchableOpacity>
-          </LinearGradient>
-
-          <LinearGradient
-            colors={['#ff4235', '#ff8348']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            className="w-[35%] self-center rounded-xl  shadow-lg overflow-hidden"
-          >
-            <TouchableOpacity
-              onPress={() => setStep(1)}
-              activeOpacity={0.8}
-              className="p-4 rounded-xl py-3 flex-row items-center justify-center gap-2"
-              style={{ backgroundColor: 'transparent' }}
-            >
-              <Image source={require("../assets/images/arrow_left.png")}/>
-              <Text className="text-white text-center font-semibold text-xl mr-2">
-                Voltar
-              </Text>
-            </TouchableOpacity>
-          </LinearGradient>
-
-          <TouchableOpacity 
-              onPress={() => router.replace('/')} 
-              className="self-center mt-4"
-              >
-              <Text className="text-black underline font-bold text-lg">
-                Já possui conta? Fazer login.
-              </Text>
-          </TouchableOpacity>
-        </View>
-
+        <FormFooterStep2 onSubmit={handleSubmit(handleRegister)} onBack={() => setStep(1)}/>
       )}
 
 

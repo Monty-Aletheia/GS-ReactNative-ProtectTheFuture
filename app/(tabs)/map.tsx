@@ -18,7 +18,7 @@ const Map = () => {
       setLocation(currentPosition);
       console.log("Location permission granted. Current position:", currentPosition);
       
-      console.log("Current position:", location);
+      
     }
   
   }
@@ -36,6 +36,7 @@ const Map = () => {
         center: newLocation.coords
       })
     })
+    console.log("Current position:", location);
   }, []);
 
   return (

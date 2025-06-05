@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import ControlledTextInput from '../components/ControlledTextInput'
 import { LinearGradient } from 'expo-linear-gradient'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const loginSchema = z.object({
   email: z.string().min(1, "Email é obrigatório"),
@@ -17,26 +18,16 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-
-// function handleLogin(email: string, password: string) {
-//     signInWithEmailAndPassword(getAuth(), email, password)
-//   .then(() => {
-//     router.navigate("/profile")
-//     console.log('User account signed in!');
-//   })
-//   .catch(error => {
-//     console.error(error);
-//   });
-// }
-
-
+async function removeFirebaseIdAsyncStorage() {
+    await AsyncStorage.removeItem("@userFirebaseId"); 
+  }
 
 const Login = () => {
 
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { signIn, isLoading } = useAuth();
+  const { signIn, isLoading, userFirebaseId, getUserByFirebaseId } = useAuth();
   const {
     control,
     handleSubmit,
@@ -49,8 +40,15 @@ const Login = () => {
     },
   });
 
+  async function getUid() {
+    const id = await AsyncStorage.getItem("@userFirebaseId")
+    return id;
+  }
+
   useEffect(() => {
 
+    getUid().then((id) => {
+      if (id) {
 
     const unsubscribe = onAuthStateChanged(getAuth(), (currentUser) => {
       if (currentUser) {
@@ -60,9 +58,17 @@ const Login = () => {
         setUser(null);
       }
     });
+    
 
     return unsubscribe;
+
+    }})
+
   }, []);
+
+  useEffect(()=>{
+    removeFirebaseIdAsyncStorage();    
+  }, [])
 
 
   async function handleLogin(data:LoginFormData) {
@@ -75,15 +81,6 @@ const Login = () => {
   }
 
   return (
-    // <View>
-    //   <Text className="text-2xl font-bold">Login</Text>
-    //   <TextInput placeholder='email' onChangeText={setEmail}></TextInput>
-    //   <TextInput placeholder='senha'onChangeText={setPassword}></TextInput>
-    //   <TouchableOpacity onPress={()=>{handleLogin(email, password)}} ><Text>Logar</Text></TouchableOpacity>
-    //   <Link href="/register">
-    //     <Text>NÃO TENHO CONTA</Text>
-    //   </Link>
-    // </View>
 
     <View className="flex-1 self-center w-[80%] items-center h-full">
 

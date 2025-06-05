@@ -1,10 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
 import api from "../service/api";
-import { createUserWithEmailAndPassword, FirebaseAuthTypes, getAuth, signInWithEmailAndPassword } from "@react-native-firebase/auth";
+import { createUserWithEmailAndPassword, FirebaseAuthTypes, getAuth, signInWithEmailAndPassword, signOut } from "@react-native-firebase/auth";
 import { router } from "expo-router";
 import { Address } from "../types/address";
 import { User } from "../types/user";
+import { UserResponse } from "../types/userResponse";
 
 type AuthContextType = {
   signIn: (email: string, password: string) => Promise<boolean>;
@@ -14,11 +15,13 @@ type AuthContextType = {
     password: string,
     address: Address,
   ) => Promise<boolean>;
-  signOut: (auth: FirebaseAuthTypes.Module) => Promise<void>;
+  signOutProvider: () => void;
   updateUser: (newName: string) => Promise<void>;
-  getUserByFirebaseId: () => Promise<void>;
+  getUserByFirebaseId: (pushToken: string) => Promise<UserResponse | null>;
   user: User | null;
   isLoading: boolean;
+  userFirebaseId: string;
+  userResponse: UserResponse | null;
 };
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -28,6 +31,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 const AuthProvider = ({ children }: PropsWithChildren) => {
   const [userFirebaseId, setUserFirebaseId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [userResponse, setUserResponse] = useState<UserResponse | null>(null);
   const [user, setUser] = useState<User | null>(null);
 
 useEffect(() => {
@@ -52,14 +56,15 @@ const signIn = async (email: string, password: string) => {
     const auth = getAuth();
     const response = await signInWithEmailAndPassword(auth, email, password);
 
+    console.log("Usuário autenticado com sucesso:", response.user.uid);
+    
     const user = response.user;
     const id = user.uid;
 
-    await AsyncStorage.setItem("@userFirebaseId", id);
-
+    setAsyncStorage(id);
+    
     setUserFirebaseId(id);
 
-    router.navigate("/profile");
     console.log("User account signed in!");
 
     return true;
@@ -71,6 +76,10 @@ const signIn = async (email: string, password: string) => {
   }
 };
 
+async function setAsyncStorage(id: string) {
+  await AsyncStorage.setItem("@userFirebaseId", id);
+
+}
 
 const signUp = async (
     name: string,
@@ -79,90 +88,69 @@ const signUp = async (
     address: Address
   ) => {
 
-    let backendUserId: string | null = null;
+
 
     setIsLoading(true);
 
-    try {
-      const response = await api.post("User/withAddress", {
-        name,
-        email,
-        password,
-        address
-      });
-
-      if (response.status == 200) {
-        backendUserId = response.data.id;
-        const status = response.status
-        console.log("Usuario cadastrado", status);
-        
-        try {
-        const firebaseResponse = await createUserWithEmailAndPassword(
+    const firebaseResponse = await createUserWithEmailAndPassword(
           getAuth(),
           email,
           password
         );
 
-        console.log("Usuário criado no Firebase:", firebaseResponse.user.uid);
-        router.navigate("/");
-        return true;
+    const firebaseId = firebaseResponse.user.uid;
 
-      }catch (firebaseError: any) {
-            console.error("Erro ao criar usuário no Firebase:", firebaseError);
+    try {     
+            const response = await api.post("User/withAddress", {
+              firebaseId: firebaseId,
+              name,
+              email,
+              password,
+              address
+            });
+
+            console.log("Resposta do backend:", response.status);
             
-            if (backendUserId) {
-            try {
-              await api.delete(`User/${backendUserId}`);
-              console.log("Usuário removido do backend após falha no Firebase");
-            } catch (deleteError) {
-              console.error("Erro ao excluir usuário do backend:", deleteError);
-            }}   
-            
+            if (response.status == 201) {
+              const status = response.status
+
+              console.log("Usuario cadastrado no backend", status);
+              return true;
+            } else {
+              console.error("Erro ao cadastrar usuário no backend:", response.status);
+              return false;
+
+            }
+
+          } catch (error) {
+            console.error("Erro no backend:", error);
             return false;
-        } finally {
-            setIsLoading(false);
-        }
+          }
+
+  };
 
 
-
-      } else {
-        console.log("Falha ao cadastrar no backend:", response.status);
-        return false;
-      }
-    } catch (error: any) {
-      console.error("Erro durante cadastro no backend:", error.message);
+  const getUserByFirebaseId = async (pushToken: string) => {
+        
+    try {
+      const response = await api.get(`/User`);
+      const users = response.data;
       
-      return false;
-    } finally{
-        setIsLoading(false);
-    }
-  };
-
-
-  const getUserByFirebaseId = async () => {
-    try {
-      const response = await api.get(`/User/${userFirebaseId}`);
-      const data = response.data;
-      setUser(data);
+      const user = users.find((item: any) => item.user.firebaseId === userFirebaseId);
+      setUserResponse(user);
+      return user;
+      
+      
     } catch (error) {
-      console.error("Erro ao buscar dentista por ID:", error);
+      console.error("Erro ao buscar user por ID:", error);
+      return null;
     }
+    
   };
 
-  const signOut = async (auth: FirebaseAuthTypes.Module) => {
-    try {
-    await signOut(auth);
-
-    await AsyncStorage.removeItem("@userFirebaseId"); 
-
+  const signOutProvider = () => {
     setUserFirebaseId(""); 
-
-    router.replace("/"); 
-
-    console.log("User signed out!");
-  } catch (error) {
-    console.error("Erro ao fazer sign out:", error);
-  }
+    setUserResponse(null);
 };
 
 
@@ -175,7 +163,7 @@ const updateUser = async (newName: string) => {
       });
 
       if (response.status === 200) {
-        getUserByFirebaseId();
+        getUserByFirebaseId(userFirebaseId);
         setUser(response.data);
       }
     } catch (error) {
@@ -188,11 +176,13 @@ const updateUser = async (newName: string) => {
 const value = {
     signIn,
     signUp,
-    signOut,
+    signOutProvider,
     getUserByFirebaseId,
     updateUser,
     user,
-    isLoading
+    isLoading,
+    userFirebaseId,
+    userResponse
   };
 
   return (
