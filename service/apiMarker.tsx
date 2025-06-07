@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const api = axios.create({
-  baseURL: "http://user-service-aci-watchtower.brazilsouth.azurecontainer.io:8080/api/",
+const apiMarker = axios.create({
+  baseURL: "https://mobile-rabbit-api-hsfwc0aucfgmbmeg.brazilsouth-01.azurewebsites.net/",
   // baseURL: "",
   timeout: 10000,
 
@@ -11,4 +11,4 @@ const api = axios.create({
   },
 });
 
-export default api;
+export default apiMarker;

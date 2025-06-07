@@ -111,8 +111,7 @@ async function addDeviceToUser(
 const Profile = () => {
   const [newName, setNewName] = useState("");
   const [expoPushToken, setExpoPushToken] = useState("");
-  const { userResponse, getUserByFirebaseId, signOutProvider, updateUser } =
-    useAuth();
+  const { userResponse, getUserByFirebaseId, signOutProvider, updateUser } = useAuth();
 
   async function handleUpdate(newName: string) {
     const success = await updateUser(newName);
@@ -149,12 +148,9 @@ const Profile = () => {
       .catch((error: any) => setExpoPushToken(`${error}`));
   }, []);
 
-  useEffect(() => {}, [expoPushToken]);
-
   function handleSignOut() {
     signOut(getAuth()).then(() => {
       signOutProvider();
-
       router.replace("/");
     });
   }

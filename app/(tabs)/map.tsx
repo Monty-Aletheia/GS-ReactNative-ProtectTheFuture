@@ -8,22 +8,38 @@ import {
   watchPositionAsync,
 } from "expo-location";
 import React, { useEffect, useRef, useState } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import { reportService } from "../../service/reportService";
+import DangerReportBottomSheet from "../../components/dangerReportBottomSheet";
+import { MarkerInfo, MarkerInfoRequest, Markers } from "../../types/markerInfo";
+import { getMarkers, reportDisaster } from "../../service/markerService";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import SuccessMessage from "../../components/successMessage";
 
 const Map = () => {
+  const [visible, setVisible] = useState(false);
   const [location, setLocation] = React.useState<LocationObject | null>(null);
   const [appearBottomSheet, setAppearBottomSheet] = useState(false);
   const [selectedReport, setSelectedReport] = useState("");
+  const mutation = useMutation({
+  mutationFn: (data: MarkerInfoRequest) => reportDisaster(data),
+  onSuccess: () => {
+    setVisible(true);
+    setTimeout(() => setVisible(false), 3000);
+  },
+  onError: (error) => {
+    console.error(error);
+    Alert.alert("Erro ao enviar o relatório", "Ocorreu uma falha ao enviar seu relatório, tente novamente");
+  },
+  });
+  const { data: reports } = useQuery<Markers>({
+  queryKey: ['reports'],
+  queryFn: getMarkers,
+  });
+
   const mapRef = useRef<MapView>(null);
   const bottomSheetRef = useRef(null);
   const snapPoints = ["50%", "85%"];
-  const reports = [
-    { id: 1, type: "flood", latitude: -23.56, longitude: -46.63 },
-    { id: 2, type: "fire", latitude: -23.55, longitude: -46.62 },
-    { id: 3, type: "crime", latitude: -23.54, longitude: -46.61 },
-  ];
 
   const handleOpenBottomSheet = () => {
     setAppearBottomSheet(true);
@@ -33,20 +49,19 @@ const Map = () => {
 
   const handleReport = () => {
     if (!selectedReport) return;
-    switch (selectedReport) {
-      case "fire":
-        reportService.reportFire();
-        break;
-      case "flood":
-        reportService.reportFlood();
-        break;
-      case "landslide":
-        reportService.reportLandslide();
-        break;
-      case "crime":
-        reportService.reportCrime();
-        break;
+    if (!location) {
+    console.warn('Localização não disponível');
+    return;
     }
+
+    const reportData: MarkerInfoRequest = {
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+      desasterType: selectedReport, 
+      markerType: "ward",
+    };
+  
+    mutation.mutate(reportData);
   };
 
   async function getLocation() {
@@ -54,16 +69,12 @@ const Map = () => {
     if (granted) {
       const currentPosition = await getCurrentPositionAsync();
       setLocation(currentPosition);
-      console.log(
-        "Location permission granted. Current position:",
-        currentPosition
-      );
     }
   }
 
   useEffect(() => {
-    getLocation();
-    watchPositionAsync(
+        getLocation();
+      watchPositionAsync(
       {
         accuracy: LocationAccuracy.Highest,
         timeInterval: 1000,
@@ -101,18 +112,31 @@ const Map = () => {
             icon={require("../../assets/images/user_marker.png")}
           />
 
-          {reports.map((report) => (
+          {reports?.markers.map((report) => (
             <Marker
               key={report.id}
               coordinate={{
-                latitude: report.latitude,
+                latitude: report.longitude,
                 longitude: report.longitude,
               }}
-              title={`Perigo: ${report.type}`}
-              icon={require("../../assets/images/danger_marker.png")}
+              title={ report.markerType === "Disaster"
+                ? `RISCO CRÍTICO:: ${report.desasterType}`
+                : `Alerta: ${report.desasterType}`}
+              icon={
+                report.markerType === "Disaster"
+                  ? require("../../assets/images/critical_marker.png")
+                  : require("../../assets/images/danger_marker.png")
+              }
             />
           ))}
         </MapView>
+      )}
+      {visible && (
+        <SuccessMessage
+          visible={visible}
+          message="Relatório cadastrado com sucesso!"
+          onHide={() => setVisible(false)}
+        />
       )}
 
       <TouchableOpacity style={styles.fab} onPress={handleOpenBottomSheet}>
@@ -120,99 +144,22 @@ const Map = () => {
           colors={["#FF3131", "#FF914D"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          style={styles.gradient}
-        >
-          <Image
-            source={require("../../assets/images/danger_report_icon.png")}
-          />
+          style={styles.gradient}>
+          <Image source={require("../../assets/images/danger_report_icon.png")}/>
         </LinearGradient>
       </TouchableOpacity>
 
       {appearBottomSheet && (
-        <BottomSheet
-          ref={bottomSheetRef}
-          index={0}
-          snapPoints={snapPoints}
-          enablePanDownToClose={true}
+        <DangerReportBottomSheet
+          visible={appearBottomSheet}
           onClose={() => setAppearBottomSheet(false)}
-        >
-          <BottomSheetView>
-            <View>
-              <View className="p-4">
-                <Text className="text-xl font-black self-center">
-                  Relatar Perigo
-                </Text>
-                <Text className="text-lg self-center">
-                  Selecione o perigo encontrado
-                </Text>
-              </View>
-              <View className="flex px-10 flex-col items-center gap-10 mt-14">
-                <View className="flex-row justify-around w-full">
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSelectedReport("landslide");
-                    }}
-                    className={`w-36 h-36 bg-red-500 rounded-3xl ${
-                      selectedReport === "landslide"
-                        ? " border-black border-2"
-                        : "border-none"
-                    }`}
-                  />
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSelectedReport("crime");
-                    }}
-                    className={`w-36 h-36 bg-blue-500 rounded-3xl ${
-                      selectedReport === "crime"
-                        ? " border-black border-2"
-                        : "border-none"
-                    }`}
-                  />
-                </View>
-
-                <View className="flex-row justify-around w-full">
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSelectedReport("fire");
-                    }}
-                    className={`w-36 h-36 bg-yellow-500 rounded-3xl ${
-                      selectedReport === "fire"
-                        ? " border-black border-2"
-                        : "border-none"
-                    }`}
-                  />
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSelectedReport("flood");
-                    }}
-                    className={`w-36 h-36 bg-green-500 rounded-3xl ${
-                      selectedReport === "flood"
-                        ? " border-black border-2"
-                        : "border-none"
-                    }`}
-                  />
-                </View>
-              </View>
-              <LinearGradient
-                colors={["#ff4235", "#ff8348"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                className="self-center rounded-xl shadow-lg overflow-hidden mt-16 w-[50%]"
-              >
-                <TouchableOpacity
-                  onPress={handleReport}
-                  activeOpacity={0.8}
-                  className="p-4 rounded-xl py-"
-                  style={{ backgroundColor: "transparent" }}
-                >
-                  <Text className="text-white text-center font-semibold text-xl ">
-                    Reportar
-                  </Text>
-                </TouchableOpacity>
-              </LinearGradient>
-            </View>
-          </BottomSheetView>
-        </BottomSheet>
+          selectedReport={selectedReport}
+          setSelectedReport={setSelectedReport}
+          handleReport={handleReport}
+          // @ts-ignore
+          bottomSheetRef={bottomSheetRef}
+          snapPoints={snapPoints}
+        />
       )}
     </View>
   );

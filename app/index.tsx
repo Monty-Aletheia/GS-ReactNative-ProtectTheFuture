@@ -9,15 +9,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Link, router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
-} from "react-native";
+import { ActivityIndicator,Alert,Image,StyleSheet,Text,TouchableOpacity,View } from "react-native";
 import z from "zod";
 import { useAuth } from "../components/AuthProvider";
 import ControlledTextInput from "../components/ControlledTextInput";
@@ -34,16 +26,10 @@ async function removeFirebaseIdAsyncStorage() {
 }
 
 const Login = () => {
+  const [visible, setVisible] = useState(false);
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const { signIn, isLoading, userFirebaseId, getUserByFirebaseId } = useAuth();
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+  const { signIn, isLoading } = useAuth();
+  const {control,handleSubmit,formState: { errors },} = useForm<LoginFormData>({resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -66,11 +52,8 @@ const Login = () => {
             setUser(null);
           }
         });
-
         return unsubscribe;
-      }
-    });
-    
+      }});
   }, []);
 
   useEffect(() => {
@@ -90,16 +73,11 @@ const Login = () => {
   return (
     <View className="flex-1 self-center w-[80%] items-center h-full">
       <View className="mt-20 mb-14">
-        <Image
-          source={require("../assets/images/watchtower_logo.png")}
-          className="w-64 h-52"
-        />
+        <Image source={require("../assets/images/watchtower_logo.png")} className="w-64 h-52"/>
       </View>
 
       <View className="w-full px-4">
-        <Text className="self-start ml-3 mt-6 mb-2 text-dark_blue text-xl font-semibold">
-          Email
-        </Text>
+        <Text className="self-start ml-3 mt-6 mb-2 text-dark_blue text-xl font-semibold">Email</Text>
         <ControlledTextInput
           control={control}
           name="email"
@@ -108,9 +86,7 @@ const Login = () => {
           style="w-full h-12 border-2 border-gray-300 px-4 rounded-lg"
         />
 
-        <Text className="self-start ml-3 mt-6 mb-2 text-dark_blue text-xl font-semibold">
-          Senha
-        </Text>
+        <Text className="self-start ml-3 mt-6 mb-2 text-dark_blue text-xl font-semibold">Senha</Text>
         <ControlledTextInput
           control={control}
           name="password"
@@ -131,24 +107,19 @@ const Login = () => {
           colors={["#ff4235", "#ff8348"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          className="w-[50%] self-center rounded-xl  shadow-lg overflow-hidden"
-        >
+          className="w-[50%] self-center rounded-xl  shadow-lg overflow-hidden">
           <TouchableOpacity
-            onPress={handleSubmit(handleLogin)}
+            onPress={() => {setVisible(true);
+setTimeout(() => setVisible(false), 3000);}}
             activeOpacity={0.8}
             className="p-4 rounded-xl py-3"
-            style={{ backgroundColor: "transparent" }}
-          >
-            <Text className="text-white text-center font-semibold text-xl">
-              Login
-            </Text>
+            style={{ backgroundColor: "transparent" }}>
+            <Text className="text-white text-center font-semibold text-xl">Login</Text>
           </TouchableOpacity>
         </LinearGradient>
 
         <Link href="/register" className="self-center mt-4">
-          <Text className="text-black underline font-bold text-lg">
-            Não possui conta? Cadastrar.
-          </Text>
+          <Text className="text-black underline font-bold text-lg">Não possui conta? Cadastrar.</Text>
         </Link>
 
         <Link href="/profile" className="self-center mt-4">
