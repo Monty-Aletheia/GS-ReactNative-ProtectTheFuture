@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://via.placeholder.com/300x100?text=LOGO+DO+PROJETO" alt="Logo do Projeto" />
+  <img src="./assets/images/logo.png" alt="Logo" style="width: 200px; height: auto;" />
 </p>
 
 # 🌪️ Sistema de Alerta de Desastres Naturais
