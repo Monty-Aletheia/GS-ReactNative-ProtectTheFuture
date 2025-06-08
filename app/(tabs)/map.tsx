@@ -1,36 +1,26 @@
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import { LinearGradient } from "expo-linear-gradient";
-import {
-  getCurrentPositionAsync,
-  LocationAccuracy,
-  LocationObject,
-  requestForegroundPermissionsAsync,
-  watchPositionAsync,
-} from "expo-location";
-import React, { useEffect, useRef, useState } from "react";
-import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useFocusEffect } from "expo-router";
+import React, { useRef, useState } from "react";
+import { StyleSheet, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
+import { useAuth } from "../../components/AuthProvider";
 import DangerReportBottomSheet from "../../components/dangerReportBottomSheet";
-import { MarkerInfo, MarkerInfoRequest, Markers } from "../../types/markerInfo";
-import { getMarkers, reportDisaster } from "../../service/markerService";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import FAB from "../../components/FAB";
 import SuccessMessage from "../../components/successMessage";
+import { useLocation } from "../../hooks/useLocation";
+import { useReportDisaster } from "../../hooks/useReporterDisaster";
+import { getMarkers } from "../../service/markerService";
+import { Markers } from "../../types/markerInfo";
 
 const Map = () => {
   const [visible, setVisible] = useState(false);
-  const [location, setLocation] = React.useState<LocationObject | null>(null);
   const [appearBottomSheet, setAppearBottomSheet] = useState(false);
   const [selectedReport, setSelectedReport] = useState("");
-  const mutation = useMutation({
-  mutationFn: (data: MarkerInfoRequest) => reportDisaster(data),
-  onSuccess: () => {
+  const { userResponse } = useAuth()
+  const queryClient = useQueryClient();
+  const mutation = useReportDisaster(() => {
     setVisible(true);
     setTimeout(() => setVisible(false), 3000);
-  },
-  onError: (error) => {
-    console.error(error);
-    Alert.alert("Erro ao enviar o relatório", "Ocorreu uma falha ao enviar seu relatório, tente novamente");
-  },
   });
   const { data: reports } = useQuery<Markers>({
   queryKey: ['reports'],
@@ -38,6 +28,7 @@ const Map = () => {
   });
 
   const mapRef = useRef<MapView>(null);
+  const location = useLocation(mapRef);
   const bottomSheetRef = useRef(null);
   const snapPoints = ["50%", "85%"];
 
@@ -48,48 +39,21 @@ const Map = () => {
   };
 
   const handleReport = () => {
-    if (!selectedReport) return;
-    if (!location) {
-    console.warn('Localização não disponível');
-    return;
-    }
+    if (!selectedReport || !location) return;
 
-    const reportData: MarkerInfoRequest = {
+    mutation.mutate({
       latitude: location.coords.latitude,
       longitude: location.coords.longitude,
-      desasterType: selectedReport, 
+      desasterType: selectedReport,
       markerType: "ward",
-    };
-  
-    mutation.mutate(reportData);
+      timestamp: new Date().toISOString(),
+      description: userResponse?.user.id,
+    });
   };
 
-  async function getLocation() {
-    const { granted } = await requestForegroundPermissionsAsync();
-    if (granted) {
-      const currentPosition = await getCurrentPositionAsync();
-      setLocation(currentPosition);
-    }
-  }
-
-  useEffect(() => {
-        getLocation();
-      watchPositionAsync(
-      {
-        accuracy: LocationAccuracy.Highest,
-        timeInterval: 1000,
-        distanceInterval: 1,
-      },
-      (newLocation) => {
-        setLocation(newLocation);
-        mapRef.current?.animateCamera({
-          pitch: 70,
-          center: newLocation.coords,
-        });
-      }
-    );
-    console.log("Current position:", location);
-  }, []);
+  useFocusEffect(()=>{
+      queryClient.invalidateQueries({queryKey: ['reports']})}
+    )
 
   return (
     <View style={styles.container}>
@@ -116,11 +80,11 @@ const Map = () => {
             <Marker
               key={report.id}
               coordinate={{
-                latitude: report.longitude,
+                latitude: report.latitude,
                 longitude: report.longitude,
               }}
               title={ report.markerType === "Disaster"
-                ? `RISCO CRÍTICO:: ${report.desasterType}`
+                ? `RISCO CRÍTICO: ${report.desasterType}`
                 : `Alerta: ${report.desasterType}`}
               icon={
                 report.markerType === "Disaster"
@@ -139,15 +103,7 @@ const Map = () => {
         />
       )}
 
-      <TouchableOpacity style={styles.fab} onPress={handleOpenBottomSheet}>
-        <LinearGradient
-          colors={["#FF3131", "#FF914D"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.gradient}>
-          <Image source={require("../../assets/images/danger_report_icon.png")}/>
-        </LinearGradient>
-      </TouchableOpacity>
+      <FAB onPress={() => handleOpenBottomSheet()} />
 
       {appearBottomSheet && (
         <DangerReportBottomSheet

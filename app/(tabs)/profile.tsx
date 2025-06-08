@@ -1,21 +1,14 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getAuth, signOut } from "@react-native-firebase/auth";
-import Constants from "expo-constants";
 import * as Device from "expo-device";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import {
-  Image,
-  Platform,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
-} from "react-native";
+import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../components/AuthProvider";
-import api from "../../service/api";
+import { formatName } from "../../utils/format";
+import { registerForPushNotificationsAsync } from "../../service/notifications";
+import { addDeviceToUser } from "../../service/deviceService";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -25,88 +18,6 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 });
-
-function handleRegistrationError(errorMessage: string) {
-  alert(errorMessage);
-  throw new Error(errorMessage);
-}
-
-async function registerForPushNotificationsAsync() {
-  if (Platform.OS === "android") {
-    Notifications.setNotificationChannelAsync("default", {
-      name: "default",
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: "#FF231F7C",
-    });
-  }
-
-  if (Device.isDevice) {
-    const { status: existingStatus } =
-      await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== "granted") {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-    if (finalStatus !== "granted") {
-      handleRegistrationError(
-        "Permission not granted to get push token for push notification!"
-      );
-      return;
-    }
-    const projectId =
-      Constants?.expoConfig?.extra?.eas?.projectId ??
-      Constants?.easConfig?.projectId;
-    if (!projectId) {
-      handleRegistrationError("Project ID not found");
-    }
-    try {
-      const pushTokenString = (
-        await Notifications.getExpoPushTokenAsync({
-          projectId,
-        })
-      ).data;
-      console.log(pushTokenString);
-      return pushTokenString;
-    } catch (e: unknown) {
-      handleRegistrationError(`${e}`);
-    }
-  } else {
-    handleRegistrationError("Must use physical device for push notifications");
-  }
-}
-
-async function addDeviceToUser(
-  expoDeviceToken: string,
-  userId: string | undefined,
-  deviceName: string | null
-) {
-  try {
-    console.log(
-      `expoDeviceToken: ${expoDeviceToken} userId: ${userId} deviceName: ${deviceName}`
-    );
-
-    const response = await api.post("/Device", {
-      expoDeviceToken: expoDeviceToken,
-      userId: userId,
-      deviceName: deviceName,
-    });
-
-    console.log(response);
-
-    if (response.status == 201) {
-      console.log("Device added successfully");
-      const data = response.data;
-      console.log("Device data:", data);
-      await AsyncStorage.setItem("@deviceId", data);
-    } else {
-      console.error("Failed to add device", response.status, response.data);
-    }
-  } catch (error: any) {
-    console.error("Error adding device:", error.message || error);
-  }
-}
 
 const Profile = () => {
   const [newName, setNewName] = useState("");
@@ -124,29 +35,26 @@ const Profile = () => {
 
   useEffect(() => {
     registerForPushNotificationsAsync()
-      .then((token) => {
-        if (token !== undefined) {
-          const formattedToken = token
-            .replace("ExponentPushToken[", "")
-            .replace("]", "");
-          getUserByFirebaseId(formattedToken)
-            .then((user) => {
-              console.log(
-                "Adding device to user:",
-                formattedToken,
-                user?.user.id,
-                Device.deviceName
-              );
-              addDeviceToUser(formattedToken, user?.user.id, Device.deviceName);
-            })
-            .catch((error: any) => {
-              console.error("Error getting user by Firebase ID:", error);
-            });
-        }
-        setExpoPushToken(token ?? "");
-      })
-      .catch((error: any) => setExpoPushToken(`${error}`));
+    .then((token) => {
+      if (!token) return;
+
+      const formattedToken = token.replace("ExponentPushToken[", "").replace("]", "");
+      setExpoPushToken(formattedToken);
+
+      getUserByFirebaseId(formattedToken)
+        .then((user) => {
+          addDeviceToUser(formattedToken, user?.user.id, Device.deviceName);
+        })
+        .catch((error) => {
+          console.error("Erro ao buscar usuário:", error);
+        });
+    })
+    .catch((error) => setExpoPushToken(`${error}`));
   }, []);
+
+  useEffect(()=>{
+    getUserByFirebaseId(expoPushToken)
+  }, [])
 
   function handleSignOut() {
     signOut(getAuth()).then(() => {
@@ -166,7 +74,7 @@ const Profile = () => {
       <View className="flex-1 items-center justify-evenly w-full mt-24">
         <View className="flex-row items-center justify-center mb-24">
           <Text className="font-black text-3xl self-center">
-            Olá, {userResponse?.user.name}
+            Olá, {formatName(userResponse?.user.name)}
           </Text>
         </View>
         <View className="flex-1 items-center justify-center gap-16 w-full">

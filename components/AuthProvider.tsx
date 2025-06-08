@@ -49,7 +49,8 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
         const storedUserFirebaseId = await AsyncStorage.getItem(
           "@userFirebaseId"
         );
-
+        console.log("firebase armazenado: ", storedUserFirebaseId);
+        
         if (storedUserFirebaseId === "true") {
           setUserFirebaseId(storedUserFirebaseId);
         }
@@ -61,6 +62,8 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
+    console.log("Entrei aqui");
+    
     try {
       const auth = getAuth();
       const response = await signInWithEmailAndPassword(auth, email, password);
@@ -69,10 +72,10 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
 
       const user = response.user;
       const id = user.uid;
-
-      setAsyncStorage(id);
-
+      console.log("FirebaseId enquanto login: ", id);
+      
       setUserFirebaseId(id);
+      await AsyncStorage.setItem("@userFirebaseId", id)
 
       console.log("User account signed in!");
 
@@ -84,10 +87,6 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
       setIsLoading(false);
     }
   };
-
-  async function setAsyncStorage(id: string) {
-    await AsyncStorage.setItem("@userFirebaseId", id);
-  }
 
   const signUp = async (
     name: string,
@@ -106,7 +105,7 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
     const firebaseId = firebaseResponse.user.uid;
 
     try {
-      const response = await api.post("User/withAddress", {
+      const response = await api.post("/User/withAddress", {
         firebaseId: firebaseId,
         name,
         email,
@@ -136,9 +135,10 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
     try {
       const response = await api.get(`/User`);
       const users = response.data;
-
+      console.log("Firebase Uid enquanto getByUserFirebaseId:", userFirebaseId);
+      const firebaseId = await AsyncStorage.getItem("@userFirebaseId")
       const user = users.find(
-        (item: any) => item.user.firebaseId === userFirebaseId
+        (item: any) => item.user.firebaseId === firebaseId
       );
       setUserResponse(user);
       return user;
@@ -149,17 +149,10 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
   };
 
   const signOutProvider = async () => {
-    try {
-      const deviceId = await AsyncStorage.getItem("@deviceId");
-      const respose = await api.delete(`/Device/${deviceId}`);
-      if (respose.status === 204) {
-        console.log("Device deleted successfully");
-        setUserFirebaseId("");
-        setUserResponse(null);
-      }
-    } catch (error) {
-      console.error("Erro ao deletar device:", error);
-    }
+
+    await AsyncStorage.removeItem("@userFirebaseId");
+    setUserFirebaseId("");
+    setUserResponse(null);
   };
 
   const updateUser = async (newName: string) => {
@@ -177,7 +170,7 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
         return false;
       }
     } catch (error) {
-      console.error("Erro ao atualizar dentista: ", error);
+      console.error("Erro ao atualizar usuario: ", error);
       return false;
     }
   };

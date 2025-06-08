@@ -21,15 +21,10 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-async function removeFirebaseIdAsyncStorage() {
-  await AsyncStorage.removeItem("@userFirebaseId");
-}
-
 const Login = () => {
-  const [visible, setVisible] = useState(false);
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
   const { signIn, isLoading } = useAuth();
-  const {control,handleSubmit,formState: { errors },} = useForm<LoginFormData>({resolver: zodResolver(loginSchema),
+  const {control, handleSubmit, formState: { errors }} = useForm<LoginFormData>({resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -38,6 +33,8 @@ const Login = () => {
 
   async function getUid() {
     const id = await AsyncStorage.getItem("@userFirebaseId");
+    console.log("no getUid: ", id);
+    
     return id;
   }
 
@@ -56,11 +53,7 @@ const Login = () => {
       }});
   }, []);
 
-  useEffect(() => {
-    removeFirebaseIdAsyncStorage();
-  }, []);
-
-  async function handleLogin(data: LoginFormData) {
+  async function handleLogin(data: LoginFormData) {    
     const success = await signIn(data.email, data.password);
     if (success) {
       router.replace("/profile");
@@ -109,8 +102,7 @@ const Login = () => {
           end={{ x: 1, y: 0 }}
           className="w-[50%] self-center rounded-xl  shadow-lg overflow-hidden">
           <TouchableOpacity
-            onPress={() => {setVisible(true);
-setTimeout(() => setVisible(false), 3000);}}
+            onPress={handleSubmit(handleLogin)}
             activeOpacity={0.8}
             className="p-4 rounded-xl py-3"
             style={{ backgroundColor: "transparent" }}>
@@ -120,10 +112,6 @@ setTimeout(() => setVisible(false), 3000);}}
 
         <Link href="/register" className="self-center mt-4">
           <Text className="text-black underline font-bold text-lg">Não possui conta? Cadastrar.</Text>
-        </Link>
-
-        <Link href="/profile" className="self-center mt-4">
-          <Text className="text-black underline font-bold text-lg">Bypass</Text>
         </Link>
       </View>
     </View>

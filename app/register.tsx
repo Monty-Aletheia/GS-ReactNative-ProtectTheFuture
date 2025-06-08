@@ -1,24 +1,21 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
-import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+// screens/Register.tsx
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  StyleSheet,
-  View
-} from "react-native";
+import { ActivityIndicator, Alert, Image, StyleSheet, View } from "react-native";
 import StepIndicator from "react-native-step-indicator";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
+import { router } from "expo-router";
+
 import AddressFormStep1 from "../components/addressFormSetp1";
 import AddressForm from "../components/addressFormStep2";
-import { useAuth } from "../components/AuthProvider";
 import FormFooterStep1 from "../components/formFooterStep1";
 import FormFooterStep2 from "../components/formFooterStep2";
+import { useAuth } from "../components/AuthProvider";
+import { useCepLookup } from "../hooks/useCepLookup";
+import { useSteps } from "../components/step/useStep";
+import { customStyles, renderStepIndicator } from "../components/step/StepInicatorCustom";
 
 const registerSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
@@ -35,33 +32,11 @@ const registerSchema = z.object({
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-const customLabels = ["Dados", "Endereço"];
-
-const customStyles = {
-  stepIndicatorSize: 16,
-  currentStepIndicatorSize: 16,
-  separatorStrokeWidth: 0,
-  currentStepStrokeWidth: 0,
-  stepStrokeWidth: 0,
-  separatorFinishedColor: "#FF3131",
-  separatorUnFinishedColor: "#D9D9D9",
-  labelColor: "#999",
-  labelSize: 13,
-  currentStepLabelColor: "#FF3131",
-};
-
 const Register = () => {
+  const { step, next, back } = useSteps();
   const [cep, setCep] = useState("");
-  const [endereco, setEndereco] = useState({
-    logradouro: " ",
-    bairro: " ",
-    localidade: " ",
-    uf: " ",
-  });
-  const [step, setStep] = useState(1);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const { signUp, isLoading } = useAuth();
+
   const {
     control,
     handleSubmit,
@@ -83,12 +58,12 @@ const Register = () => {
     },
   });
 
-  async function getFirebaseId() {
-    const userFirebaseId = await AsyncStorage.getItem("@userFirebaseId");
-    console.log("User Firebase ID:", userFirebaseId);
-  }
+  const { buscarCep } = useCepLookup(setValue);
+
   useEffect(() => {
-    getFirebaseId();
+    AsyncStorage.getItem("@userFirebaseId").then((id) =>
+      console.log("User Firebase ID:", id)
+    );
   }, []);
 
   async function handleRegister(data: RegisterFormData) {
@@ -98,83 +73,26 @@ const Register = () => {
       data.password,
       data.address
     );
+
     if (success) {
       router.replace("/");
     } else {
-      Alert.alert("Falha no cadastro","Tente novamente mais tarde. Se o problema persistir, chame o suporte.")
-      console.log("Falha no cadastro");
+      Alert.alert("Falha no cadastro", "Tente novamente mais tarde.");
     }
   }
 
-  const renderStepIndicator = ({
-    position,
-    stepStatus,
-  }: {
-    position: number;
-    stepStatus: string;
-  }) => {
-    if (stepStatus === "current") {
-      return (
-        <LinearGradient
-          colors={["#FF3131", "#FF914D"]}
-          style={{
-            width: 16,
-            height: 16,
-            borderRadius: 8,
-          }}
-        />
-      );
-    }
-
-    return (
-      <View
-        style={{
-          width: 16,
-          height: 16,
-          borderRadius: 8,
-          backgroundColor: "#D9D9D9",
-        }}
-      />
-    );
-  };
-
-  const buscarCep = async (cep: string) => {
-    const cepLimpo = cep.replace(/\D/g, "");
-    console.log("Buscando CEP:", cepLimpo);
-
-    if (cepLimpo.length !== 8) {
-      console.error("CEP inválido");
-      return;
-    }
-
-    try {
-      const reponse = await axios.get(
-        `https://viacep.com.br/ws/${cepLimpo}/json/`
-      );
-      const data = reponse.data;
-      if (data.erro) {
-        console.error("CEP não encontrado");
-        return;
-      }
-      setValue("address.street", data.logradouro);
-      setValue("address.neighborhood", data.bairro);
-      setValue("address.city", data.localidade);
-      setValue("address.state", data.uf);
-    } catch (error) {
-      console.error("Erro ao buscar CEP:", error);
-    }
-  };
-
   return (
     <View className="flex-1 self-center w-[80%] items-center h-full">
-      <View className="mt-20 ">
+      <View className="mt-20">
         <Image
           source={require("../assets/images/watchtower_logo.png")}
           className="w-64 h-52"
         />
       </View>
 
-      {step === 2 && (
+      {step === 1 ? (
+        <AddressFormStep1 control={control} errors={errors} />
+      ) : (
         <AddressForm
           control={control}
           errors={errors}
@@ -184,8 +102,6 @@ const Register = () => {
           styles={styles}
         />
       )}
-
-      {step === 1 && <AddressFormStep1 control={control} errors={errors} />}
 
       <View className="w-28 px-4">
         <StepIndicator
@@ -202,11 +118,12 @@ const Register = () => {
         </View>
       )}
 
-      {step === 1 && <FormFooterStep1 onNext={() => setStep(2)} />}
-      {step === 2 && (
+      {step === 1 ? (
+        <FormFooterStep1 onNext={next} />
+      ) : (
         <FormFooterStep2
           onSubmit={handleSubmit(handleRegister)}
-          onBack={() => setStep(1)}
+          onBack={back}
         />
       )}
     </View>

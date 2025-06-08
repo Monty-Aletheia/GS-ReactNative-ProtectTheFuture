@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiMarker = axios.create({
-  baseURL: "https://mobile-rabbit-api-hsfwc0aucfgmbmeg.brazilsouth-01.azurewebsites.net/",
+  baseURL: "https://mobile-rabbit-api.azurewebsites.net/",
   // baseURL: "",
   timeout: 10000,
 

@@ -8,11 +8,15 @@ export interface MarkerInfo {
     longitude: number,
     desasterType: string,
     markerType: string
+    description: string
+    timestamp: string
 }
 
 export interface MarkerInfoRequest {
     latitude: number,
     longitude: number,
     desasterType: string,
-    markerType: string
+    markerType: string,
+    timestamp: string,
+    description: string | undefined
 }
