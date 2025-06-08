@@ -1,21 +1,19 @@
-// screens/Register.tsx
+import { zodResolver } from "@hookform/resolvers/zod";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ActivityIndicator, Alert, Image, StyleSheet, View } from "react-native";
 import StepIndicator from "react-native-step-indicator";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
-import { router } from "expo-router";
-
 import AddressFormStep1 from "../components/addressFormSetp1";
 import AddressForm from "../components/addressFormStep2";
+import { useAuth } from "../components/AuthProvider";
 import FormFooterStep1 from "../components/formFooterStep1";
 import FormFooterStep2 from "../components/formFooterStep2";
-import { useAuth } from "../components/AuthProvider";
-import { useCepLookup } from "../hooks/useCepLookup";
-import { useSteps } from "../components/step/useStep";
 import { customStyles, renderStepIndicator } from "../components/step/StepInicatorCustom";
+import { useSteps } from "../components/step/useStep";
+import { useCepLookup } from "../hooks/useCepLookup";
 
 const registerSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),

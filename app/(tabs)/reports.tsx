@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { FlatList, StyleSheet, Text, View, Image } from "react-native";
 import ListItems from "../../components/item";
 import { useQuery, useQueryClient } from "@tanstack/react-query";

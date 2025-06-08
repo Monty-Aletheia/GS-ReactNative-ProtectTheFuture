@@ -9,7 +9,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Link, router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { ActivityIndicator,Alert,Image,StyleSheet,Text,TouchableOpacity,View } from "react-native";
+import { ActivityIndicator, Alert, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import z from "zod";
 import { useAuth } from "../components/AuthProvider";
 import ControlledTextInput from "../components/ControlledTextInput";
